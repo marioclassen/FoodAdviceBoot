@@ -5,14 +5,14 @@
     "text": "Hello {{ message.user.name }}"
   },
   {
-    "name": "promts.name",
+    "name": "prompts.name",
     "type": "prompt",
     "prompt": "text",
     "text": "Please tell me your name",
     "variable": "dialog.name"
   },
   {
-    "name": "promts.zipCode",
+    "name": "prompts.zipCode",
     "type": "prompt",
     "prompt": "number",
     "text": "Thank you {{dialog.name}}, could you please tell me your ZipCode.",
