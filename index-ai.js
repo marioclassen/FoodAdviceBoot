@@ -87,9 +87,30 @@ intents.matches('CanIEatThis', [
 
 intents.matches('RestaurantAdvice', [
     function (session) {
-        session.send("I can recommend you the El Nacional");
-    }
-]);
+        session.send("I can recommend you the La Taperia at El Nacional");
+
+        builder.Prompts.choice(session, "More information", "MenuCard|Navigation|Rating");
+    },
+
+    function (session, results) {
+        if (results.response && results.response.entity != '(quit)') {
+
+            var resultString = results.response.entity;
+
+            if(resultString == "MenuCard"){
+                session.send("http://www.elnacionalbcn.com/wp-content/uploads/2014/11/CARTA_TAPERIA.pdf");
+            } else if (resultString == "Navigation"){
+                session.send("https://www.google.com/maps/dir/Current+Location/El+Nacional");
+            } else if (resultString == "Rating"){
+                session.send("https://www.tripadvisor.co.uk/LocationPhotoDirectLink-g187497-d7175242-i240567832-El_Nacional_Barcelona-Barcelona_Catalonia.htm");
+            }
+
+        } else {
+            session.endDialog();
+        }
+    },
+
+    ]);
 
 //TODO: implement logic to parse all user date
 intents.matches('UserProfile', [
