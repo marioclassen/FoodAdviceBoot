@@ -81,6 +81,9 @@ intents.matches('CanIEatThis', [
     function (session, results) {
         var allergies = session.userData['allergies'];
         var food_name = session.dialogData.food;
+        if (!food_name) {
+            food_name = results.response;
+        }
         session.send("I will check if you can eat " + food_name + " with your " + allergies + " allergy.");
     }
 ]);
