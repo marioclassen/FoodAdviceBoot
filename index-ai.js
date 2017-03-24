@@ -5,6 +5,7 @@ var request = require('request');
 
 // Setup Restify Server
 var server = restify.createServer();
+
 server.listen(process.env.port || process.env.PORT || 3978, function () {
     console.log('%s listening to %s', server.name, server.url);
 });
@@ -26,6 +27,8 @@ var intents = new builder.IntentDialog({
     recognizers: [recognizer]
 });
 
+
+
 bot.dialog('/', intents);
 
 intents.matches('smalltalk.greetings', function (session, args) {
@@ -39,8 +42,23 @@ intents.matches('smalltalk.greetings', function (session, args) {
 });
 
 intents.matches('CanIEatThis', [
-    function (session, args) {
+    function (session, args, next) {
+        //save the args
+        session.dialogData.args = args;
+
+        var allergies = session.userData['allergies'];
+        if (!allergies) {
+            session.beginDialog('/allergies');
+        } else {
+            next();
+        }
+    },
+    function (session, args, next) {
+        args = session.dialogData.args;
+
+
         var food = builder.EntityRecognizer.findEntity(args.entities, 'food');
+        console.log(food);
         if (food) {
             var food_name = food.entity;
 
@@ -50,13 +68,20 @@ intents.matches('CanIEatThis', [
             //    body = JSON.parse(body);
             //    temp = body.current.temp_c;
 
-            session.send("I will check if you can eat " + food_name);
+
+            // Prompt for title
+            //session.send("I will check if you can eat " + food_name);
+            session.dialogData.food = food_name;
+            next();
         } else {
             builder.Prompts.text(session, 'Which food do you want me to check?');
         }
+
     },
     function (session, results) {
-        session.send("I will check if you can eat " + results.response);
+        var allergies = session.userData['allergies'];
+        var food_name = session.dialogData.food;
+        session.send("I will check if you can eat " + food_name + " with your " + allergies + " allergy.");
     }
 ]);
 
@@ -92,3 +117,25 @@ intents.matches('UserProfile', [
 intents.onDefault(function (session) {
     session.send("Sorry...can you please rephrase?");
 });
+
+bot.dialog('/allergies', [
+    function (session, args) {
+        var allergies = session.userData['allergies'];
+        if (!allergies) {
+            builder.Prompts.choice(session, "Which allergie do you have?", ['gluten', 'peanut', 'lactose']);
+        } else {
+            //next();
+        }
+    },
+    function (session, results) {
+        var allergies = session.userData['allergies'];
+        if (!allergies) {
+            session.userData['allergies'] = results.response.entity;
+            console.log(results.response.entity);
+        }
+        session.endDialog();
+    }
+]);
+
+
+
